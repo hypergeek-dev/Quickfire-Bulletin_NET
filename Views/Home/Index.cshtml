@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+   
+    <form asp-controller="Home" asp-action="index" method="post">
+        <button type="submit" class="btn btn-success">Seed Database</button>
+    </form>
+</div>
+
+
+@model List<Quickfire_Bulletin.Models.NewsArticle>
+
+@foreach (var article in Model)
+{
+    if (article != null)
+    {
+        <div class="article">
+            <h2>@article.Title</h2>
+            <a href="@article.Link">Read more</a>
+            <p>Source: @article.SourceId</p>
+            <p>@article.Description</p>
+            <p>Published on: @article.PubDate</p>
+            <div>
+                <img src="@article.ImageUrl" alt="Image for @article.Title" />
+            </div>
+            <div class="content">
+                @Html.Raw(article.Content.Replace("\n\n", "</p><p>"))
+            </div>
+        </div>
+        <div class="comment-section">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form asp-controller="Home" asp-action="AddComment" method="post">
+                    <input type="hidden" name="articleId" value="@article.ArticleId" />
+                    <textarea name="content" placeholder="Add a comment..."></textarea>
+                    <button type="submit">Submit Comment</button>
+                </form>
+            }
+            else
+            {
+                <p>You must be logged in to add a comment.</p>
+            }
+        </div>
+
+    }
+}
