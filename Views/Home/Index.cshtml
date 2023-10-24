@@ -1,49 +1,100 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var currentUserName = User.Identity.Name;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-   
-    <form asp-controller="Home" asp-action="index" method="post">
-        <button type="submit" class="btn btn-success">Seed Database</button>
-    </form>
-</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("DOM fully loaded and parsed");
 
+        Array.from(document.querySelectorAll(".add-comment-btn")).forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                console.log("Add Comment Button Clicked");
+                $('#addCommentModal').modal('show');
+            });
+        });
 
-@model List<Quickfire_Bulletin.Models.NewsArticle>
+        Array.from(document.querySelectorAll(".edit-comment-btn")).forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const commentId = this.getAttribute("data-comment-id");
+                console.log("Edit Comment Button Clicked, Comment ID: ", commentId);
+            });
+        });
 
-@foreach (var article in Model)
-{
-    if (article != null)
+        Array.from(document.querySelectorAll(".delete-comment-btn")).forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const commentId = this.getAttribute("data-comment-id");
+                console.log("Delete Comment Button Clicked, Comment ID: ", commentId);
+            });
+        });
+    });
+</script>
+
+<!-- Bootstrap container -->
+<div class="container">
+    <!-- Title -->
+    <div class="text-center mt-5">
+        <h1 class="display-4">Quickfire Bulletin</h1>
+        <form asp-controller="Home" asp-action="index" method="post">
+            <button type="submit" class="btn btn-success">Seed Database</button>
+        </form>
+    </div>
+
+    @model List<Quickfire_Bulletin.Models.NewsArticle>
+
+    <!-- Loop through articles -->
+    @foreach (var article in Model)
     {
-        <div class="article">
-            <h2>@article.Title</h2>
-            <a href="@article.Link">Read more</a>
-            <p>Source: @article.SourceId</p>
-            <p>@article.Description</p>
-            <p>Published on: @article.PubDate</p>
-            <div>
-                <img src="@article.ImageUrl" alt="Image for @article.Title" />
-            </div>
-            <div class="content">
-                @Html.Raw(article.Content.Replace("\n\n", "</p><p>"))
-            </div>
-        </div>
-        <div class="comment-section">
-            @if (User.Identity.IsAuthenticated)
-            {
-                <form asp-controller="Home" asp-action="AddComment" method="post">
-                    <input type="hidden" name="articleId" value="@article.ArticleId" />
-                    <textarea name="content" placeholder="Add a comment..."></textarea>
-                    <button type="submit">Submit Comment</button>
-                </form>
-            }
-            else
-            {
-                <p>You must be logged in to add a comment.</p>
-            }
-        </div>
+        if (article != null)
+        {
+            <!-- Article -->
+            <div class="article my-5 border-bottom pb-5">
+                <h2 class="font-weight-bold">@article.Title</h2>
+                <p>@article.Description</p>
+                <div class="content">
+                    <p>@Html.Raw(article.Content.Replace("\n\n", "</p><p>"))</p>
+                </div>
+                <small class="text-muted">
+                    Published on: @article.PubDate <br>
+                    Source: @article.SourceId
+                </small>
 
+                <!-- Comment Section -->
+                <div class="comment-section my-5">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <button type="button" class="btn btn-success add-comment-btn">Add Comment</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-success add-comment-btn" disabled>You must be logged in to add a comment</button>
+                    }
+
+                    <!-- Existing Comments -->
+                    <div class="existing-comments">
+                        @if (article.Comments != null && article.Comments.Count > 0)
+                        {
+                            foreach (var comment in article.Comments.OrderBy(c => c.CreatedOn))
+                            {
+                                <div class="comment border rounded p-3 mb-3">
+                                    <p>@comment.CommentContent</p>
+                                    <small class="text-muted">Posted by: @comment.Name at @comment.CreatedOn</small>
+
+                                    @if (User.Identity.IsAuthenticated && comment.Name == currentUserName)
+                                    {
+                                        <button type="button" class="btn btn-primary edit-comment-btn" data-comment-id="@comment.Id">Edit</button>
+                                        <button type="button" class="btn btn-danger delete-comment-btn" data-comment-id="@comment.Id">Delete</button>
+                                    }
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No comments yet. Be the first to comment!</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
     }
-}
+</div>

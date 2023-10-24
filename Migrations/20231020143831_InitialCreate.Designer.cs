@@ -12,8 +12,8 @@ using Quickfire_Bulletin.Areas.Identity.Data;
 namespace Quickfire_Bulletin.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20231018164612_key2article")]
-    partial class key2article
+    [Migration("20231020143831_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -161,62 +161,6 @@ namespace Quickfire_Bulletin.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Quickfire_Bulletin.Areas.Identity.Data.NewsArticle", b =>
-                {
-                    b.Property<string>("ArticleId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Link")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("PubDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SourceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SourcePriority")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VideoUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ArticleId");
-
-                    b.ToTable("Articles");
-                });
-
             modelBuilder.Entity("Quickfire_Bulletin.Areas.Identity.Data.Quickfire_BulletinUser", b =>
                 {
                     b.Property<string>("Id")
@@ -298,30 +242,20 @@ namespace Quickfire_Bulletin.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CommentContent")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NewsArticleArticleId")
-                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ArticleId");
 
-                    b.HasIndex("NewsArticleArticleId");
-
-                    b.ToTable("Comment");
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Quickfire_Bulletin.Models.NewsArticle", b =>
@@ -329,39 +263,23 @@ namespace Quickfire_Bulletin.Migrations
                     b.Property<string>("ArticleId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Link")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PubDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("SourceId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SourcePriority")
@@ -372,12 +290,11 @@ namespace Quickfire_Bulletin.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VideoUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ArticleId");
 
-                    b.ToTable("NewsArticle");
+                    b.ToTable("Articles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -439,16 +356,7 @@ namespace Quickfire_Bulletin.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Quickfire_Bulletin.Areas.Identity.Data.NewsArticle", null)
-                        .WithMany("Comments")
-                        .HasForeignKey("NewsArticleArticleId");
-
                     b.Navigation("Article");
-                });
-
-            modelBuilder.Entity("Quickfire_Bulletin.Areas.Identity.Data.NewsArticle", b =>
-                {
-                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("Quickfire_Bulletin.Models.NewsArticle", b =>

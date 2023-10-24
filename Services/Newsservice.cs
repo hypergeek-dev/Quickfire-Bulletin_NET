@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Quickfire_Bulletin.Areas.Identity.Data;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using Quickfire_Bulletin.Areas.Identity.Data;
 using Quickfire_Bulletin.Models;
 using Newtonsoft.Json;
 
@@ -33,13 +32,13 @@ namespace Quickfire_Bulletin.Services
             {
                 CommentContent = content,
                 Article = article,
-                Name = userName 
+                Name = userName,
+                CreatedOn = DateTime.Now
             };
 
             await _context.Comments.AddAsync(comment);
             await _context.SaveChangesAsync();
         }
-
 
         public async Task EditCommentAsync(int commentId, string newContent)
         {
@@ -68,9 +67,67 @@ namespace Quickfire_Bulletin.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<NewsArticle>> GetArticlesAsync()
+        public async Task<List<NewsArticle>> GetArticlesAsync(bool includeComments = false)
         {
-            return await _context.Articles.ToListAsync();
+            if (includeComments)
+            {
+                return await _context.Articles.Include(a => a.Comments)
+                    .OrderBy(a => a.PubDate)
+                    .Select(a => new NewsArticle
+                    {
+                        ArticleId = a.ArticleId,
+                        Title = a.Title,
+                        Link = a.Link,
+                        SourceId = a.SourceId,
+                        Description = a.Description,
+                        PubDate = a.PubDate,
+                        Content = a.Content,  
+                        Comments = a.Comments.OrderBy(c => c.CreatedOn).ToList()
+                    }).ToListAsync();
+            }
+            else
+            {
+                return await _context.Articles.ToListAsync();
+            }
+        }
+
+
+        public async Task SeedDatabaseAsync()
+        {
+            string apiUrl = $"https://newsdata.io/api/1/news?apikey={_apiKey}&country=gb&language=en";
+            using var httpClient = new HttpClient();
+            HttpResponseMessage response = await httpClient.GetAsync(apiUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                string content = await response.Content.ReadAsStringAsync();
+                Models.NewsApiResponse apiResponse = JsonConvert.DeserializeObject<Models.NewsApiResponse>(content);
+                if (apiResponse.Results is List<NewsArticle> newsArticles)
+                {
+                    foreach (var newsArticle in newsArticles)
+                    {
+                        var article = new NewsArticle
+                        {
+                            ArticleId = newsArticle.ArticleId,
+                            Title = newsArticle.Title,
+                            Link = newsArticle.Link,
+                            SourceId = newsArticle.SourceId,
+                            SourcePriority = newsArticle.SourcePriority,
+                            ImageUrl = newsArticle.ImageUrl,
+                            VideoUrl = newsArticle.VideoUrl,
+                            Description = newsArticle.Description,
+                            PubDate = newsArticle.PubDate,
+                            Content = newsArticle.Content
+                        };
+                        _context.Articles.Add(article);
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        private List<string> SplitSentences(string content)
+        {
+            return content.Split(new[] { ". ", "! ", "? " }, StringSplitOptions.None).ToList();
         }
 
         public List<string> GroupIntoParagraphs(List<string> sentences, int n)
@@ -94,53 +151,6 @@ namespace Quickfire_Bulletin.Services
             }
 
             return paragraphs;
-        }
-
-        public async Task SeedDatabaseAsync()
-        {
-            string apiUrl = $"https://newsdata.io/api/1/news?apikey={_apiKey}&country=gb&language=en";
-
-            using var httpClient = new HttpClient();
-            HttpResponseMessage response = await httpClient.GetAsync(apiUrl);
-
-            if (response.IsSuccessStatusCode)
-            {
-                string content = await response.Content.ReadAsStringAsync();
-                Models.NewsApiResponse apiResponse = JsonConvert.DeserializeObject<Models.NewsApiResponse>(content);
-
-                if (apiResponse.Results is List<NewsArticle> newsArticles)
-                {
-                    foreach (var newsArticle in newsArticles)
-                    {
-                        List<string> sentences = SplitSentences(newsArticle.Content);
-                        List<string> paragraphs = GroupIntoParagraphs(sentences, 5);
-                        string formattedContent = string.Join("\n\n", paragraphs);
-
-                        var article = new NewsArticle
-                        {
-                            ArticleId = newsArticle.ArticleId,
-                            Title = newsArticle.Title,
-                            Link = newsArticle.Link,
-                            SourceId = newsArticle.SourceId,
-                            SourcePriority = newsArticle.SourcePriority,
-                            ImageUrl = newsArticle.ImageUrl,
-                            VideoUrl = newsArticle.VideoUrl,
-                            Description = newsArticle.Description,
-                            PubDate = newsArticle.PubDate,
-                            Content = formattedContent
-                        };
-
-                        _context.Articles.Add(article);
-                    }
-
-                    await _context.SaveChangesAsync();
-                }
-            }
-        }
-
-        private List<string> SplitSentences(string content)
-        {
-            return content.Split(new[] { ". ", "! ", "? " }, StringSplitOptions.None).ToList();
         }
     }
 }

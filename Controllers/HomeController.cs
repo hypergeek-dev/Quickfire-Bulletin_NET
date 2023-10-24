@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Quickfire_Bulletin.Models;
 using Quickfire_Bulletin.Services;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Authorization;
+
 
 namespace Quickfire_Bulletin.Controllers
 {
@@ -19,20 +18,18 @@ namespace Quickfire_Bulletin.Controllers
 
         public async Task<IActionResult> Index()
         {
-            List<NewsArticle> articles = await _newsService.GetArticlesAsync();
+            List<NewsArticle> articles = await _newsService.GetArticlesAsync(includeComments: true);
             if (articles == null)
             {
                 articles = new List<NewsArticle>();
             }
-
             return View(articles);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> AddComment(string articleId, string content)
         {
-            string userName = User.Identity.Name; 
+            string userName = User.Identity.Name;
             await _newsService.AddCommentAsync(articleId, content, userName);
             return RedirectToAction("Index");
         }
