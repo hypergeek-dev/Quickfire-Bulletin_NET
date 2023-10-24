@@ -39,6 +39,16 @@ namespace Quickfire_Bulletin.Services
             await _context.Comments.AddAsync(comment);
             await _context.SaveChangesAsync();
         }
+        public async Task<Comment> GetCommentByIdAsync(int commentId)
+        {
+            var comment = await _context.Comments.FindAsync(commentId);
+            if (comment == null)
+            {
+                _logger.LogError($"Comment with ID {commentId} not found.");
+                return null;
+            }
+            return comment;
+        }
 
         public async Task EditCommentAsync(int commentId, string newContent)
         {

@@ -4,7 +4,6 @@ using Quickfire_Bulletin.Areas.Identity.Data;
 using Quickfire_Bulletin.Services;
 using Serilog;
 using Serilog.Events;
-using System;
 using System.Data.SqlClient;
 using edu.stanford.nlp.pipeline;
 

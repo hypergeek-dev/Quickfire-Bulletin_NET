@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Quickfire_Bulletin.Models;
 using Quickfire_Bulletin.Services;
-
 using Microsoft.AspNetCore.Authorization;
-
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Quickfire_Bulletin.Controllers
 {
@@ -32,6 +32,18 @@ namespace Quickfire_Bulletin.Controllers
             string userName = User.Identity.Name;
             await _newsService.AddCommentAsync(articleId, content, userName);
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "MemberOrAdmin")]
+        public async Task<IActionResult> EditComment(int commentId)
+        {
+            Comment comment = await _newsService.GetCommentByIdAsync(commentId); // You'll need to implement this method in your service
+            if (comment == null)
+            {
+                return NotFound();
+            }
+            return View(comment); // Make sure you have a View named "EditComment"
         }
 
         [HttpPost]

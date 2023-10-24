@@ -1,54 +1,23 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
-    var currentUserName = User.Identity.Name;
+    var currentUserName = User.Identity.Name ?? ""; // Null check
 }
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        console.log("DOM fully loaded and parsed");
-
-        Array.from(document.querySelectorAll(".add-comment-btn")).forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                console.log("Add Comment Button Clicked");
-                $('#addCommentModal').modal('show');
-            });
-        });
-
-        Array.from(document.querySelectorAll(".edit-comment-btn")).forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                const commentId = this.getAttribute("data-comment-id");
-                console.log("Edit Comment Button Clicked, Comment ID: ", commentId);
-            });
-        });
-
-        Array.from(document.querySelectorAll(".delete-comment-btn")).forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                const commentId = this.getAttribute("data-comment-id");
-                console.log("Delete Comment Button Clicked, Comment ID: ", commentId);
-            });
-        });
-    });
-</script>
-
-<!-- Bootstrap container -->
 <div class="container">
     <!-- Title -->
     <div class="text-center mt-5">
         <h1 class="display-4">Quickfire Bulletin</h1>
-        <form asp-controller="Home" asp-action="index" method="post">
-            <button type="submit" class="btn btn-success">Seed Database</button>
-        </form>
     </div>
 
-    @model List<Quickfire_Bulletin.Models.NewsArticle>
+    @model List<NewsArticle>
 
-    <!-- Loop through articles -->
+    @* Loop through articles *@
     @foreach (var article in Model)
     {
+        @* Null Check for Article *@
         if (article != null)
         {
-            <!-- Article -->
-            <div class="article my-5 border-bottom pb-5">
+            <div class="article my-5 border-bottom pb-5" data-article-id="@article.ArticleId">
                 <h2 class="font-weight-bold">@article.Title</h2>
                 <p>@article.Description</p>
                 <div class="content">
@@ -96,5 +65,35 @@
                 </div>
             </div>
         }
+        else
+        {
+            <p class="text-danger">Article is null.</p>
+        }
     }
 </div>
+
+<!-- Add/Edit Comment Modal -->
+<div class="modal fade" id="addCommentModal" tabindex="-1" role="dialog" aria-labelledby="addCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCommentModalLabel">Add/Edit Comment</h5>
+            </div>
+            <div class="modal-body">
+                <form id="commentForm">
+                    <div class="form-group">
+                        <label for="commentContent">Comment</label>
+                        <textarea class="form-control" id="commentContent" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveCommentBtn">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/site.js.js" defer></script>
+}
