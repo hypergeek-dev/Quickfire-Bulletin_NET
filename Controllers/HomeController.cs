@@ -35,15 +35,25 @@ namespace Quickfire_Bulletin.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> FetchCommentContent(int commentId)
+        {
+            var comment = await _newsService.GetCommentByIdAsync(commentId);
+            if (comment == null)
+            {
+                return Json(new { success = false, message = "Comment not found" });
+            }
+            return Json(new { success = true, commentContent = comment.CommentContent });
+        }
+        [HttpGet]
         [Authorize(Policy = "MemberOrAdmin")]
         public async Task<IActionResult> EditComment(int commentId)
         {
-            Comment comment = await _newsService.GetCommentByIdAsync(commentId); // You'll need to implement this method in your service
+            Comment comment = await _newsService.GetCommentByIdAsync(commentId); 
             if (comment == null)
             {
                 return NotFound();
             }
-            return View(comment); // Make sure you have a View named "EditComment"
+            return View(comment); 
         }
 
         [HttpPost]

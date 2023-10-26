@@ -1,9 +1,18 @@
-﻿using Quickfire_Bulletin.Areas.Identity.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
+using Quickfire_Bulletin.Areas.Identity.Data;
 using Quickfire_Bulletin.Models;
 using Newtonsoft.Json;
-
+using System.Net.Http;
+using edu.stanford.nlp.pipeline;
+using java.util;
+using edu.stanford.nlp.ling;
+using edu.stanford.nlp.util;
 
 namespace Quickfire_Bulletin.Services
 {
@@ -12,12 +21,17 @@ namespace Quickfire_Bulletin.Services
         private readonly ILogger<NewsService> _logger;
         private readonly Context _context;
         private readonly string _apiKey;
+        private readonly StanfordCoreNLP pipeline;
 
         public NewsService(ILogger<NewsService> logger, Context context, IOptions<MyAppSettings> settings)
         {
             _logger = logger;
             _context = context;
             _apiKey = settings.Value.APIKey;
+
+            var props = new Properties();
+            props.setProperty("annotators", "tokenize, ssplit");
+            pipeline = new StanfordCoreNLP(props);
         }
 
         public async Task AddCommentAsync(string articleId, string content, string userName)
@@ -39,6 +53,7 @@ namespace Quickfire_Bulletin.Services
             await _context.Comments.AddAsync(comment);
             await _context.SaveChangesAsync();
         }
+
         public async Task<Comment> GetCommentByIdAsync(int commentId)
         {
             var comment = await _context.Comments.FindAsync(commentId);
@@ -83,24 +98,13 @@ namespace Quickfire_Bulletin.Services
             {
                 return await _context.Articles.Include(a => a.Comments)
                     .OrderBy(a => a.PubDate)
-                    .Select(a => new NewsArticle
-                    {
-                        ArticleId = a.ArticleId,
-                        Title = a.Title,
-                        Link = a.Link,
-                        SourceId = a.SourceId,
-                        Description = a.Description,
-                        PubDate = a.PubDate,
-                        Content = a.Content,  
-                        Comments = a.Comments.OrderBy(c => c.CreatedOn).ToList()
-                    }).ToListAsync();
+                    .ToListAsync();
             }
             else
             {
                 return await _context.Articles.ToListAsync();
             }
         }
-
 
         public async Task SeedDatabaseAsync()
         {
@@ -121,9 +125,6 @@ namespace Quickfire_Bulletin.Services
                             Title = newsArticle.Title,
                             Link = newsArticle.Link,
                             SourceId = newsArticle.SourceId,
-                            SourcePriority = newsArticle.SourcePriority,
-                            ImageUrl = newsArticle.ImageUrl,
-                            VideoUrl = newsArticle.VideoUrl,
                             Description = newsArticle.Description,
                             PubDate = newsArticle.PubDate,
                             Content = newsArticle.Content
@@ -135,9 +136,22 @@ namespace Quickfire_Bulletin.Services
             }
         }
 
-        private List<string> SplitSentences(string content)
+        public List<string> SplitSentencesWithCoreNLP(string content)
         {
-            return content.Split(new[] { ". ", "! ", "? " }, StringSplitOptions.None).ToList();
+            var annotation = new Annotation(content);
+            pipeline.annotate(annotation);
+
+            var sentences = new List<string>();
+            var coreMap = annotation.get(typeof(CoreAnnotations.SentencesAnnotation)) as ArrayList;
+            if (coreMap != null)
+            {
+                foreach (CoreMap sentence in coreMap)
+                {
+                    sentences.Add(sentence.ToString());
+                }
+            }
+
+            return sentences;
         }
 
         public List<string> GroupIntoParagraphs(List<string> sentences, int n)

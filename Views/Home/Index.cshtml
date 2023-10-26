@@ -1,20 +1,17 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
-    var currentUserName = User.Identity.Name ?? ""; // Null check
+    var currentUserName = User.Identity.Name ?? "";
 }
 
+@model List<NewsArticle>
+
 <div class="container">
-    <!-- Title -->
     <div class="text-center mt-5">
         <h1 class="display-4">Quickfire Bulletin</h1>
     </div>
 
-    @model List<NewsArticle>
-
-    @* Loop through articles *@
     @foreach (var article in Model)
     {
-        @* Null Check for Article *@
         if (article != null)
         {
             <div class="article my-5 border-bottom pb-5" data-article-id="@article.ArticleId">
@@ -28,7 +25,6 @@
                     Source: @article.SourceId
                 </small>
 
-                <!-- Comment Section -->
                 <div class="comment-section my-5">
                     @if (User.Identity.IsAuthenticated)
                     {
@@ -39,27 +35,19 @@
                         <button type="button" class="btn btn-success add-comment-btn" disabled>You must be logged in to add a comment</button>
                     }
 
-                    <!-- Existing Comments -->
                     <div class="existing-comments">
-                        @if (article.Comments != null && article.Comments.Count > 0)
+                        @foreach (var comment in article.Comments.OrderBy(c => c.CreatedOn))
                         {
-                            foreach (var comment in article.Comments.OrderBy(c => c.CreatedOn))
-                            {
-                                <div class="comment border rounded p-3 mb-3">
-                                    <p>@comment.CommentContent</p>
-                                    <small class="text-muted">Posted by: @comment.Name at @comment.CreatedOn</small>
+                            <div class="comment border rounded p-3 mb-3" data-comment-id="@comment.Id" data-article-id="@article.ArticleId">
+                                <p>@comment.CommentContent</p>
+                                <small class="text-muted">Posted by: @comment.Name at @comment.CreatedOn</small>
 
-                                    @if (User.Identity.IsAuthenticated && comment.Name == currentUserName)
-                                    {
-                                        <button type="button" class="btn btn-primary edit-comment-btn" data-comment-id="@comment.Id">Edit</button>
-                                        <button type="button" class="btn btn-danger delete-comment-btn" data-comment-id="@comment.Id">Delete</button>
-                                    }
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <p class="text-muted">No comments yet. Be the first to comment!</p>
+                                @if (User.Identity.IsAuthenticated && comment.Name == currentUserName)
+                                {
+                                    <button type="button" class="btn btn-primary edit-comment-btn" data-comment-id="@comment.Id">Edit</button>
+                                    <button type="button" class="btn btn-danger delete-comment-btn" data-comment-id="@comment.Id">Delete</button>
+                                }
+                            </div>
                         }
                     </div>
                 </div>
@@ -73,11 +61,11 @@
 </div>
 
 <!-- Add/Edit Comment Modal -->
-<div class="modal fade" id="addCommentModal" tabindex="-1" role="dialog" aria-labelledby="addCommentModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="addCommentModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addCommentModalLabel">Add/Edit Comment</h5>
+                <h5 class="modal-title">Add/Edit Comment</h5>
             </div>
             <div class="modal-body">
                 <form id="commentForm">
@@ -95,76 +83,76 @@
     </div>
 </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let isEditMode = false;
-            let currentCommentId = null;
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let isEditMode = false;
+        let currentCommentId = null;
+        const myModal = new bootstrap.Modal(document.getElementById('addCommentModal'));
 
-            const articleDiv = document.querySelector('.article');
-            const articleId = articleDiv ? articleDiv.getAttribute('data-article-id') : null;
-            const myModal = new bootstrap.Modal(document.getElementById('addCommentModal'));
+        document.querySelectorAll(".add-comment-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                isEditMode = false;
+                currentCommentId = null;
+                document.getElementById('commentContent').value = '';
+                myModal.show();
+            });
+        });
 
-            Array.from(document.querySelectorAll(".add-comment-btn")).forEach(function (btn) {
-                btn.addEventListener("click", function () {
-                    isEditMode = false;
-                    currentCommentId = null;
-                    document.getElementById('commentContent').value = '';
-                    myModal.show();
+        document.querySelectorAll(".edit-comment-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                isEditMode = true;
+                currentCommentId = this.getAttribute("data-comment-id");
+                $.get(`/Home/FetchCommentContent?commentId=${currentCommentId}`, function (response) {
+                    if (response.success) {
+                        document.getElementById('commentContent').value = response.commentContent;
+                        myModal.show();
+                    } else {
+                        alert(response.message);
+                    }
                 });
             });
+        });
 
-            Array.from(document.querySelectorAll(".edit-comment-btn")).forEach(function (btn) {
-                btn.addEventListener("click", function () {
-                    isEditMode = true;
-                    currentCommentId = this.getAttribute("data-comment-id");
-
-                    $.get(`/Home/EditComment?commentId=${currentCommentId}`, function (data) {
-                        document.getElementById('commentContent').value = data.commentContent;
-                    });
-
-                    myModal.show();
+        document.querySelectorAll(".delete-comment-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const commentId = this.getAttribute("data-comment-id");
+                $.post("/Home/DeleteComment", { commentId: commentId }, function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
                 });
             });
+        });
 
-            Array.from(document.querySelectorAll(".delete-comment-btn")).forEach(function (btn) {
-                btn.addEventListener("click", function () {
-                    const commentId = this.getAttribute("data-comment-id");
+        document.getElementById('saveCommentBtn').addEventListener('click', function () {
+            const commentContent = document.getElementById('commentContent').value;
+            const articleId = document.querySelector('.article').getAttribute('data-article-id');
 
-                    $.post("/Home/DeleteComment", { commentId: commentId }, function (response) {
+            if (isEditMode) {
+                $.post("/Home/EditComment", { commentId: currentCommentId, newContent: commentContent }, function (response) {
+                    if (response.success) {
+                        myModal.hide();
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                });
+            } else {
+                if (articleId) {
+                    $.post("/Home/AddComment", { articleId: articleId, content: commentContent }, function (response) {
                         if (response.success) {
-                            const commentDiv = document.querySelector(`[data-comment-id="${commentId}"]`).closest(".comment");
-                            commentDiv.remove();
-                            myModal.hide(); 
+                            myModal.hide();
                             location.reload();
-                        }
-                    });
-                });
-            });
-
-            document.getElementById('saveCommentBtn').addEventListener('click', function () {
-                const commentContent = document.getElementById('commentContent').value;
-
-                if (isEditMode) {
-                    $.post("/Home/EditComment", { commentId: currentCommentId, newContent: commentContent }, function (response) {
-                        if (response.success) {
-                            myModal.hide(); 
-                            location.reload();
+                        } else {
+                            alert(response.message);
                         }
                     });
                 } else {
-                    if (articleId) {
-                        $.post("/Home/AddComment", { articleId: articleId, content: commentContent }, function (response) {
-                            if (response.success) {
-                                myModal.hide();
-                                location.reload();
-                            }
-                        });
-                    } else {
-                        console.error("Article ID is not available.");
-                    }
+                    console.error("Article ID is not available.");
                 }
-            });
-
-            // Hide modal on close button
-            document.querySelector("[data-dismiss='modal']").addEventListener('click', function () {
-                myModal.hide(); </script>
+            }
+        });
+    });
+</script>
