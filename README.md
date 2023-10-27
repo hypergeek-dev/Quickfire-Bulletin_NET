@@ -13,7 +13,7 @@
 - [Acknowledgments](#acknowledgments)
 
 ## Description
-Quickfire Bulletin is a .NET-based web application that appears to be focused on news aggregation and management. It allows users to interact with news articles, add comments, and perform administrative tasks like seeding the database and deleting articles.
+Quickfire Bulletin is a .NET-based web application which fetches news from an API and relays them visually presentable. It allows users to interact with news articles, add comments, and perform administrative tasks like seeding the database and deleting articles.
 
 ## Technologies Used
 - .NET Core
