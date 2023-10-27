@@ -4,6 +4,7 @@
 - [Description](#description)
 - [Technologies Used](#technologies-used)
 - [Core Components](#core-components)
+- [Article Handling](#article-handling)
 - [Features](#features)
 - [User Stories](#user-stories)
 - [Installation & Setup](#installation--setup)
@@ -33,10 +34,13 @@ Quickfire Bulletin is a .NET-based web application which fetches news from an AP
     - `NewsApiResponse`: Represents the response from an external news API.
     - `NewsArticle`: Represents a news article.
 
-3. **Services**
-    - `MyAppSettings`: Previously used for storing API keys, now uses a plugin for API key storage.
-    - `NewsService`: Handles the business logic for news articles and comments.
-
+## Article Handling
+The `NewsService` class is responsible for handling articles and comments. It uses Entity Framework for database operations and Stanford CoreNLP for natural language processing. The class provides methods for:
+- Adding, editing, and deleting comments.
+- Fetching articles with or without comments.
+- Seeding the database with articles from an external API.
+- Emptying the article table.
+- Sentence splitting and paragraph grouping using Stanford CoreNLP.
 ## Features
 1. **News Aggregation**: Fetches news articles possibly from an external API.
 2. **Commenting**: Users can add, edit, and delete comments on news articles.
