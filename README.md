@@ -5,6 +5,7 @@
 - [Technologies Used](#technologies-used)
 - [Core Components](#core-components)
 - [Article Handling](#article-handling)
+- [Database Relationships](#database-relationships)
 - [Features](#features)
 - [User Stories](#user-stories)
 - [Installation & Setup](#installation--setup)
@@ -41,6 +42,12 @@ The `NewsService` class is responsible for handling articles and comments. It us
 - Seeding the database with articles from an external API.
 - Emptying the article table.
 - Sentence splitting and paragraph grouping using Stanford CoreNLP.
+
+## Database Relationships
+- `NewsArticle` to `Comment`: One-to-Many. A single news article can have multiple comments.
+- `Comment` to `Like`: One-to-Many. A single comment can have multiple likes.
+- `NewsArticle` to `Like`: Many-to-Many through `Comment`. A news article can have multiple likes through its comments.
+
 ## Features
 1. **News Aggregation**: Fetches news articles possibly from an external API.
 2. **Commenting**: Users can add, edit, and delete comments on news articles.
