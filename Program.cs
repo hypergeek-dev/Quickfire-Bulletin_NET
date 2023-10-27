@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Quickfire_Bulletin.Areas.Identity.Data;
 using Quickfire_Bulletin.Services;
 using Serilog;
 using Serilog.Events;
+using System;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 using edu.stanford.nlp.pipeline;
-
 
 namespace Quickfire_Bulletin
 {
@@ -20,7 +22,7 @@ namespace Quickfire_Bulletin
                 .CreateLogger();
 
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.Configure<MyAppSettings>(builder.Configuration.GetSection("MyAppSettings"));
+            builder.Configuration.AddUserSecrets<Program>();
 
             builder.Services.AddAuthorization(options =>
             {
@@ -39,7 +41,7 @@ namespace Quickfire_Bulletin
 
             builder.Services.AddTransient<NewsService>();
             builder.Services.AddControllersWithViews();
-            builder.Services.AddRazorPages();  // Added RazorPages to services
+            builder.Services.AddRazorPages();
 
             var host = builder.Build();
 
@@ -58,6 +60,10 @@ namespace Quickfire_Bulletin
             {
                 logger.LogError(ex, "An error occurred while connecting to SQL database.");
             }
+
+            // Retrieve the API key from the secret store
+            var configuration = host.Services.GetRequiredService<IConfiguration>();
+            var apiKey = configuration["ApiSettings:NewsApiKey"];
 
             var jarRoot = @"\Models\stanford-corenlp-4.5.5-models.jar";
             var props = new java.util.Properties();

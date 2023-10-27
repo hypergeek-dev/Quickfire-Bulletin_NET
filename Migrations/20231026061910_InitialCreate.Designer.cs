@@ -12,7 +12,7 @@ using Quickfire_Bulletin.Areas.Identity.Data;
 namespace Quickfire_Bulletin.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20231020143831_InitialCreate")]
+    [Migration("20231026061910_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

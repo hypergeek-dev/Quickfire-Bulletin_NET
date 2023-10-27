@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Quickfire_Bulletin.Services;
-using System.Threading.Tasks;
 
 namespace Quickfire_Bulletin.Controllers
 {
-    public class AdminController : Controller  // <- Class definition was missing
+    public class AdminController : Controller
     {
         private readonly NewsService _newsService;
 
@@ -24,6 +23,21 @@ namespace Quickfire_Bulletin.Controllers
             try
             {
                 await _newsService.SeedDatabaseAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                // Handle error
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteAllArticles()
+        {
+            try
+            {
+                await _newsService.EmptyArticleTableAsync();
                 return RedirectToAction(nameof(Index));
             }
             catch

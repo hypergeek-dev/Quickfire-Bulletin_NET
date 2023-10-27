@@ -60,7 +60,7 @@
     }
 </div>
 
-<!-- Add/Edit Comment Modal -->
+
 <div class="modal fade" id="addCommentModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -82,66 +82,57 @@
         </div>
     </div>
 </div>
-
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let isEditMode = false;
-        let currentCommentId = null;
-        const myModal = new bootstrap.Modal(document.getElementById('addCommentModal'));
 
-        document.querySelectorAll(".add-comment-btn").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                isEditMode = false;
-                currentCommentId = null;
-                document.getElementById('commentContent').value = '';
-                myModal.show();
-            });
-        });
+ 
+        document.addEventListener("DOMContentLoaded", function () {
+            let isEditMode = false;
+            let currentCommentId = null;
+            const myModal = new bootstrap.Modal(document.getElementById('addCommentModal'));
 
-        document.querySelectorAll(".edit-comment-btn").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                isEditMode = true;
-                currentCommentId = this.getAttribute("data-comment-id");
-                $.get(`/Home/FetchCommentContent?commentId=${currentCommentId}`, function (response) {
-                    if (response.success) {
-                        document.getElementById('commentContent').value = response.commentContent;
-                        myModal.show();
-                    } else {
-                        alert(response.message);
-                    }
+            document.querySelectorAll(".add-comment-btn").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    isEditMode = false;
+                    currentCommentId = null;
+                    document.getElementById('commentContent').value = '';
+                    myModal.show();
                 });
             });
-        });
 
-        document.querySelectorAll(".delete-comment-btn").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                const commentId = this.getAttribute("data-comment-id");
-                $.post("/Home/DeleteComment", { commentId: commentId }, function (response) {
-                    if (response.success) {
-                        location.reload();
-                    } else {
-                        alert(response.message);
-                    }
+            document.querySelectorAll(".edit-comment-btn").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    isEditMode = true;
+                    currentCommentId = this.getAttribute("data-comment-id");
+                    $.get(`/Home/FetchCommentContent?commentId=${currentCommentId}`, function (response) {
+                        if (response.success) {
+                            document.getElementById('commentContent').value = response.commentContent;
+                            myModal.show();
+                        } else {
+                            alert(response.message);
+                        }
+                    });
                 });
             });
-        });
 
-        document.getElementById('saveCommentBtn').addEventListener('click', function () {
-            const commentContent = document.getElementById('commentContent').value;
-            const articleId = document.querySelector('.article').getAttribute('data-article-id');
-
-            if (isEditMode) {
-                $.post("/Home/EditComment", { commentId: currentCommentId, newContent: commentContent }, function (response) {
-                    if (response.success) {
-                        myModal.hide();
-                        location.reload();
-                    } else {
-                        alert(response.message);
-                    }
+            document.querySelectorAll(".delete-comment-btn").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    const commentId = this.getAttribute("data-comment-id");
+                    $.post("/Home/DeleteComment", { commentId: commentId }, function (response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    });
                 });
-            } else {
-                if (articleId) {
-                    $.post("/Home/AddComment", { articleId: articleId, content: commentContent }, function (response) {
+            });
+
+            document.getElementById('saveCommentBtn').addEventListener('click', function () {
+                const commentContent = document.getElementById('commentContent').value;
+                const articleId = document.querySelector('.article').getAttribute('data-article-id');
+
+                if (isEditMode) {
+                    $.post("/Home/EditComment", { commentId: currentCommentId, newContent: commentContent }, function (response) {
                         if (response.success) {
                             myModal.hide();
                             location.reload();
@@ -150,9 +141,22 @@
                         }
                     });
                 } else {
-                    console.error("Article ID is not available.");
+                    if (articleId) {
+                        $.post("/Home/AddComment", { articleId: articleId, content: commentContent }, function (response) {
+                            if (response.success) {
+                                myModal.hide();
+                                location.reload();
+                            } else {
+                                alert(response.message);
+                            }
+                        });
+                    } else {
+                        console.error("Article ID is not available.");
+                    }
                 }
-            }
+            });
         });
-    });
+
+
+
 </script>
