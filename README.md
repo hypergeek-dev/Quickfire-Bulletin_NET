@@ -1,51 +1,73 @@
-# Quickfire Bulletin
+# Quickfire Bulletin .NET Web Application
+
+## Table of Contents
+- [Description](#description)
+- [Technologies Used](#technologies-used)
+- [Core Components](#core-components)
+- [Features](#features)
+- [User Stories](#user-stories)
+- [Installation & Setup](#installation--setup)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ## Description
-Quickfire Bulletin is a .NET-based web application that fetches news articles from various sources and archives them for easy access. The application uses the NewsData API to fetch the latest headlines and archives them under different categories.
+Quickfire Bulletin is a .NET-based web application that appears to be focused on news aggregation and management. It allows users to interact with news articles, add comments, and perform administrative tasks like seeding the database and deleting articles.
+
+## Technologies Used
+- .NET Core
+- SQL Server
+- Entity Framework
+- ASP.NET Identity for authentication
+- Possibly Stanford CoreNLP for natural language processing
+
+## Core Components
+1. **Controllers**
+    - `AdminController`: Handles administrative tasks like seeding the database and deleting all articles.
+    - `HomeController`: Manages the main functionalities like displaying articles, adding, editing, and deleting comments.
+
+2. **Models**
+    - `Comment`: Represents a comment made on a news article.
+    - `Like`: Represents a like on a comment.
+    - `NewsApiResponse`: Represents the response from an external news API.
+    - `NewsArticle`: Represents a news article.
+
+3. **Services**
+    - `MyAppSettings`: Previously used for storing API keys, now uses a plugin for API key storage.
+    - `NewsService`: Handles the business logic for news articles and comments.
 
 ## Features
-- Fetch latest news articles from NewsData API
-- Archive old articles for historical reference
-- User authentication for personalized experience
-- Cloudinary integration for media storage
+1. **News Aggregation**: Fetches news articles possibly from an external API.
+2. **Commenting**: Users can add, edit, and delete comments on news articles.
+3. **Administration**: Admin users can seed the database with news articles and delete all articles.
+4. **User Authentication**: Uses ASP.NET Identity for user authentication and role management.
 
-## Prerequisites
-- .NET SDK
-- SQL Server
-- Cloudinary Account
+## User Stories
+1. **As a user, I want to view the latest news articles so that I can stay updated.**
+2. **As a user, I want to comment on articles to share my opinions.**
+3. **As an admin, I want to seed the database to populate it with fresh articles.**
+4. **As an admin, I want to delete all articles to refresh the content.**
 
-## Installation
-1. Clone the repository:
-    ```
-    git clone https://github.com/yourusername/Quickfire-Bulletin.git
-    ```
-2. Navigate to the project directory:
-    ```
-    cd Quickfire-Bulletin
-    ```
-3. Install the required packages:
-    ```
-    dotnet restore
-    ```
-4. Update the `appsettings.json` file with your database and Cloudinary credentials.
+
+## Installation & Setup
+1. Clone the repository.
+2. Navigate to the project directory and restore the required packages.
+3. Update `appsettings.json` with your SQL Server and other credentials.
+4. Run the application.
 
 ## Usage
-1. To run the application, execute:
-    ```
-    dotnet run
-    ```
-2. Open your web browser and navigate to `http://localhost:5000`.
-
-## API Documentation
-The application uses the NewsData API for fetching news articles. For more information, visit [NewsData API Documentation](https://newsdata.io/docs/getting-started).
+1. Run the application.
+2. Navigate to the home page to view the list of articles.
+3. Log in to add or edit comments.
+4. Admin users can seed the database and delete all articles.
 
 ## Contributing
-If you'd like to contribute, please fork the repository and make changes as you'd like. Pull requests are warmly welcome.
+Feel free to fork the repository and submit pull requests.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+The project appears to be open-source, but the license is not specified.
 
 ## Acknowledgments
-- NewsData API for providing the news data.
-- Cloudinary for media storage solutions.
-
+- The application might be using an external news API for fetching news articles.
+- Stanford CoreNLP may be used for natural language processing tasks.
